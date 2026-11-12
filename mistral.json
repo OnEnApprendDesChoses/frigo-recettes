@@ -62,5 +62,10 @@
       "name": "postgres",
       "engine": "postgres"
     }
-  ]
+  ],
+  "deployment": {
+    "organizationId": "b136edff-66e0-4ea6-9be2-f7ddb44b41b1",
+    "workspaceId": "cd090444-5748-4521-a8ad-70b1848f6bf0",
+    "appId": "01a1d1fd-4b9e-702e-aee1-c3596596e796"
+  }
 }
