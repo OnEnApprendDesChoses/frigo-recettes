@@ -1,0 +1,20 @@
+name: Deploy to Mistral
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Mistral CLI
+        run: curl -fsSL https://mistral.ai/cli/install.sh | bash
+      - name: Deploy
+        env:
+          MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
+        run: |
+          export PATH="$HOME/.mistral/bin:$PATH"
+          mistral deploy --yes

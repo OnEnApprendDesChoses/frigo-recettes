@@ -1,60 +1,54 @@
-# Frigo → Recettes
+# Frigo → Recettes (Mistral App)
 
-App de suggestions de recettes à partir du contenu du frigo, avec contraintes (temps, régime),
-répertoires de recettes importés depuis des sites, sources d'inspiration et historique noté.
+App full-stack construite avec le CLI Mistral : front TanStack Start, API FastAPI,
+base Postgres managée, suggestions générées par l'API Mistral.
 
-## Stack
+## Ce que fait l'app
 
-- **web/** : Vite + React + TypeScript
-- **server/** : Express + TypeScript + SQLite (better-sqlite3)
-- **LLM** : API Mistral (variable d'env `MISTRAL_API_KEY`) pour générer les suggestions
-  inspirées de tes répertoires.
+- **Frigo persistant** : ajoute/retire des ingrédients, gardés d'une session à l'autre
+- **Contraintes** : temps disponible, régimes, nombre de jours à planifier
+- **Répertoires de recettes** : crée des répertoires et importe des recettes depuis
+  n'importe quelle URL publiant du JSON-LD schema.org/Recipe (Marmiton, CuisineAZ…)
+- **Suggestions LLM** : les recettes importées qui matchent le mieux le frigo servent
+  d'exemples de style au modèle ; l'historique des notes oriente aussi les suggestions
+- **Histoire** : note chaque recette faite (1 à 5 étoiles)
 
-## Démarrage
-
-```bash
-# Terminal 1 : API
-cd server
-npm install
-export MISTRAL_API_KEY="ta-clé"   # optionnel, suggestions simulées sinon
-npm run dev                         # http://localhost:3001
-
-# Terminal 2 : front
-cd web
-npm install
-npm run dev                         # http://localhost:5173
-```
-
-## Modèle de données (SQLite, voir server/src/db.ts)
-
-- `ingredients` / `fridge_items` : le frigo (persistant, plus besoin de re-saisir)
-- `recipe_collections` : tes répertoires (« Marmiton favoris », « Ottolenghi », recettes perso…)
-- `recipes` : recettes importées (via URL) ou créées à la main, rattachées à un répertoire
-- `inspiration_sources` : sites/cuisiniers qui orientent le style des suggestions
-- `cooked_history` : recettes faites + note, alimente la mémoire des goûts
-
-## Endpoints principaux
+## Endpoints (API, préfixe /api)
 
 | Méthode | Route | Rôle |
 |---|---|---|
-| GET/POST/DELETE | `/api/fridge` | gérer le frigo |
-| GET/POST | `/api/collections` | gérer les répertoires |
-| POST | `/api/collections/:id/import` | importer une recette depuis une URL |
-| GET/POST | `/api/recipes` | lister / créer des recettes |
-| POST | `/api/suggest` | suggestions LLM (frigo + contraintes + extraits des répertoires) |
-| GET/POST | `/api/history` | historique des recettes faites |
+| GET / POST / DELETE | `/kitchen` | frigo (POST : `{"name": "oeufs"}`) |
+| GET / POST | `/recipes/collections` | répertoires |
+| POST | `/recipes/collections/{id}/import` | importer une recette (`{"url": "…"}`) |
+| GET / POST | `/recipes` | recettes |
+| GET / POST | `/history` | historique noté |
+| POST | `/suggest` | suggestions (`{"temps_max":45,"regimes":[],"nb_jours":1}`) |
 
-## Comment les répertoires nourrissent les suggestions
-
-Quand tu demandes une suggestion, le serveur :
-1. filtre tes recettes importées par similarité d'ingrédients avec ton frigo,
-2. envoie les plus proches au LLM comme exemples de style,
-3. le LLM propose de nouvelles recettes adaptées à ton frigo, ton temps et ton régime.
-
-## Pousser sur GitHub
+## Démarrage local
 
 ```bash
-git init && git add . && git commit -m "starter frigo-recettes"
-git remote add origin git@github.com:<ton-compte>/frigo-recettes.git
-git push -u origin main
+mistral login          # connexion navigateur
+mistral dev            # démarre API + web + Postgres (nécessite Docker)
 ```
+
+- Web : http://localhost:3001 — API : http://localhost:3000/api
+
+## Déploiement
+
+```bash
+git init && git add . && git commit -m "Frigo → Recettes"
+git remote add origin <ton-repo-github> && git push -u origin main
+mistral deploy
+```
+
+Le déploiement clone le commit poussé sur `origin`, applique les migrations
+(`0001_frigo`), puis sert l'API et le web. Configure `MISTRAL_API_KEY` dans les
+secrets de l'app sur Studio si nécessaire (en local, le gateway de `mistral dev`
+utilise ta session de login).
+
+## Structure
+
+- `apps/api/src/api/routers/api/` : routeurs auto-découverts (`kitchen`, `recipes`, `history`, `suggest`)
+- `packages/py/db/src/db/models/` : modèles SQLModel auto-découverts
+- `packages/py/db/src/db/migrations/versions/0001_frigo_recettes.py` : création des tables
+- `apps/web/src/routes/index.tsx` : toute l'interface
