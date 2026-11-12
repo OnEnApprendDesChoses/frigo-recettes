@@ -21,4 +21,10 @@ jobs:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
         run: |
           export PATH="$HOME/.mistral/bin:$PATH"
-          mistral deploy --yes
+          for i in 1 2 3 4; do
+            if mistral deploy --yes; then exit 0; fi
+            echo "Tentative $i/4 echouee, nouvelle tentative dans 90 s..."
+            sleep 90
+          done
+          echo "Echec du deploy apres 4 tentatives."
+          exit 1
