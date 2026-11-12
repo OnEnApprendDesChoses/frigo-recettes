@@ -35,16 +35,11 @@ mistral dev            # démarre API + web + Postgres (nécessite Docker)
 
 ## Déploiement
 
-```bash
-git init && git add . && git commit -m "Frigo → Recettes"
-git remote add origin <ton-repo-github> && git push -u origin main
-mistral deploy
-```
-
+Chaque push sur `main` déclenche un déploiement automatique via GitHub Actions
+(`.github/workflows/deploy.yml`), avec `MISTRAL_API_KEY` en secret du dépôt.
 Le déploiement clone le commit poussé sur `origin`, applique les migrations
-(`0001_frigo`), puis sert l'API et le web. Configure `MISTRAL_API_KEY` dans les
-secrets de l'app sur Studio si nécessaire (en local, le gateway de `mistral dev`
-utilise ta session de login).
+(`0001_frigo`), puis sert l'API et le web. Configure aussi `MISTRAL_API_KEY`
+dans les secrets de l'app sur Studio pour que les suggestions LLM fonctionnent.
 
 ## Structure
 
