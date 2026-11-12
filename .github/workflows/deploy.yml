@@ -21,4 +21,4 @@ jobs:
           MISTRAL_API_KEY: ${{ secrets.MISTRAL_API_KEY }}
         run: |
           export PATH="$HOME/.mistral/bin:$PATH"
-          mistral deploy --yes
+          mistral apps deploy --yes
